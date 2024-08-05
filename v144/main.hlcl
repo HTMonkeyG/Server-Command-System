@@ -3,22 +3,69 @@
 var entityCtr
   , itemCtr
   , disableEntityClear
-  , disableItemClear;
+  , disableItemClear
+  , itemClearTmr;
 
 // 距离限制
 chain 距离限制 repeating {
-  execute(as @a at @s[x=0,y=0,z=0,rm=200000]) {
+  execute(as @a[tag=!§khost§r] at @s[x=0,y=0,z=0,rm=200000]) {
     `clearspawnpoint`;
     tdisp(@s, "tell", "§lᑅ §e控制台 §c你跑的太远了");
     `kill`;
   }
+  tdisp(@a[tag=§khost§r], "tell", "§lᑅ §e控制台 §g你已在距离限制外");
+  delayh 400;
 }
 
 // 实体清除
 chain 实体清除 repeating {
   entityCtr = @e;
-  if(@e > MAXENTITY && !disableEntityClear) {
+  if(entityCtr > MAXENTITY && !disableEntityClear) {
     tdisp(@a, "tell", "§lᑅ §e控制台 §c实体已强制清除");
     `kill @e`;
   }
+  delayh 3;
+}
+
+// 掉落物清除
+chain 掉落物清除 repeating {
+  itemCtr = @e[type=item];
+  if(itemCtr > MAXENTITY && !disableItemClear) {
+    tdisp(@a, "tell", "§lᑅ §e控制台 §c掉落物已强制清除");
+    `kill @e[type=item]`;
+    itemClearTmr = -1;
+  }
+  delayh 3;
+}
+
+// 掉落物延迟清除
+chain 掉落物延迟清除 repeating {
+  if(disableItemClear) itemClearTmr = -1;
+  if(itemCtr >= 0) {
+    tdisp(@a, "actionbar", "§a掉落物还有", itemClearTmr, "秒清除");
+    itemCtr--;
+  }
+  if(!itemClearTmr) {
+    `kill @e[type=item]`;
+     tdisp(@a, "actionbar", "§a掉落物已清除");
+  }
+  if(itemCtr > MINITEM && !disableItemClear && itemClearTmr < 0)
+    itemClearTmr = 15;
+  delayh 20;
+}
+
+// 跨界机
+chain ban repeating {
+  execute(in "the_end") `tp @a[tag=ban] 0 0 0`;
+  execute(in "overworld") `tp @a[tag=ban] 0 0 0`;
+}
+
+// 完全隐身
+chain invi repeating {
+  `effect @a[tag=invi] invisibility 9999 255 true`;
+  `playanimation @a[tag=invi] animation.creeper.swelling default 9999`;
+  `effect @a[tag=deinvi] invisibility 0`;
+  `playanimation @a[tag=deinvi] animation.creeper.swelling default 0`;
+  @a[tag=deinvi] -= "invi";
+  @a -= "deinvi";
 }
