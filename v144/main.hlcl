@@ -1,0 +1,24 @@
+#defaultScb "bkstage"
+
+var entityCtr
+  , itemCtr
+  , disableEntityClear
+  , disableItemClear;
+
+// 距离限制
+chain 距离限制 repeating {
+  execute(as @a at @s[x=0,y=0,z=0,rm=200000]) {
+    `clearspawnpoint`;
+    tdisp(@s, "tell", "§lᑅ §e控制台 §c你跑的太远了");
+    `kill`;
+  }
+}
+
+// 实体清除
+chain 实体清除 repeating {
+  entityCtr = @e;
+  if(@e > MAXENTITY && !disableEntityClear) {
+    tdisp(@a, "tell", "§lᑅ §e控制台 §c实体已强制清除");
+    `kill @e`;
+  }
+}
